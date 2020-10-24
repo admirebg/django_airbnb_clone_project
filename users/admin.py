@@ -16,7 +16,7 @@ class CustomUserAdmin(UserAdmin):
             "custom profile",
             {
                 "fields": (
-                    "avatar", "gender", "bio",
+                    "avatar", "gender", "bio", "superhost"
                 )
             },
         ),
