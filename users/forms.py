@@ -20,20 +20,26 @@ class LoginForm(forms.Form):
             self.add_error("email", forms.ValidationError("User does not exist."))
 
 
-class SignUpForm(forms.Form):
-    first_name = forms.CharField(max_length=80)
-    last_name = forms.CharField(max_length=80)
-    email = forms.EmailField()
+# forms.Form을 forms.ModelForm으로 변경함
+# ModelForm을 많이 쓰지만 sign up 시에는 커스텀으로 짜는 게 편할 때가 많다고 함.
+class SignUpForm(forms.ModelForm):
+    class Meta:
+        model = models.User
+        fields = ("first_name", "last_name", "email")
+
+    # first_name = forms.CharField(max_length=80)
+    # last_name = forms.CharField(max_length=80)
+    # email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput)
     password1 = forms.CharField(widget=forms.PasswordInput, label="Confirm Password")
 
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
-        try:
-            models.User.objects.get(email=email)
-            raise forms.ValidationError("User already exists with that email.")
-        except models.User.DoesNotExist:
-            return email
+    # def clean_email(self):
+    #     email = self.cleaned_data.get("email")
+    #     try:
+    #         models.User.objects.get(email=email)
+    #         raise forms.ValidationError("User already exists with that email.")
+    #     except models.User.DoesNotExist:
+    #         return email
 
     # 정의된 필드 순서대로 clean 함수를 태우고 리턴 값을 cleaned_data에 넣기 때문에 clean_password 함수에서 password1값을 get 할 수 없음.
     def clean_password1(self):
@@ -45,14 +51,11 @@ class SignUpForm(forms.Form):
         else:
             return password
 
-    def save(self):
-        first_name = self.cleaned_data.get("first_name")
-        last_name = self.cleaned_data.get("last_name")
+    def save(self, *args, **kwargs):
+        user = super().save(commit=False)
         email = self.cleaned_data.get("email")
         password = self.cleaned_data.get("password")
-
-        # 비밀번호를 암호화해서 저장하기 위해 그냥 create()가 아닌 create_user() 사용.
-        user = models.User.objects.create_user(email, email, password) # 암호화해서 user 생성 해줌.
-        user.first_name = first_name
-        user.last_name = last_name
+        user.username = email
+        user.set_password(password)
         user.save()
+
