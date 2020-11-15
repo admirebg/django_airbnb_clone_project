@@ -21,6 +21,7 @@ from django.conf import settings  # 파일명이 변경되도 상관없음. 세�
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("rooms/", include("rooms.urls", namespace="rooms")),
+    path("uses/", include("users.urls", namespace="users")),
     path("", include("core.urls", namespace="core"))
 ]
 
